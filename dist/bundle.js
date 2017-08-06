@@ -22390,6 +22390,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(83);
 var react_dom_1 = __webpack_require__(82);
 var infinity_container_1 = __webpack_require__(185);
+var props = {
+    loadMore: function () { return console.log('hello'); }
+};
 react_dom_1.render(React.createElement(infinity_container_1.default, null), document.getElementById("app"));
 
 
@@ -22419,11 +22422,21 @@ var InfinityListContainer = (function (_super) {
     }
     InfinityListContainer.prototype.render = function () { return React.createElement(List_1.default, null); };
     InfinityListContainer.defaultProps = {
+        className: '',
         elementIsScrollable: false,
+        containerHeight: '100%',
+        threshold: 100,
         horizontal: false,
         hasMore: true,
         loadingMore: false,
-        showLoader: true
+        loader: React.createElement("div", { style: {
+                textAlign: 'center'
+            } }, "Loading..."),
+        showLoader: true,
+        holderType: 'div',
+        loadMore: false,
+        // children: [], items: [],
+        animateItems: false
     };
     return InfinityListContainer;
 }(React.PureComponent));
