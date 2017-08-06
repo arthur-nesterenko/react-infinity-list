@@ -1,7 +1,10 @@
 import * as React from 'react';
 
-const List = () => <div>
-    Hello
+interface propsList {
+    items : Array < JSX.Element >
+}
+const List = ({items} : propsList) : JSX.Element => <div>
+    {items}
 </div>;
 
 export default List;
