@@ -1,0 +1,20 @@
+{
+  "name": "Infinity-list",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "webpack --progress --colors --watch"
+  },
+  "dependencies": {
+    "@types/react": "^16.0.0",
+    "@types/react-dom": "^15.5.2",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1"
+  },
+  "devDependencies": {
+    "awesome-typescript-loader": "^3.2.2",
+    "source-map-loader": "^0.2.1",
+    "typescript": "^2.4.2"
+  }
+}
