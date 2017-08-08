@@ -4,47 +4,54 @@ import InfinityListContainer from './containers/infinity-container'
 import {times} from 'lodash'
 
 const styles = {
-        border: '1px #000 solid',
-        marginTop: '15px',
-        height: '100px',
-        textAlign: 'center'
+    border: '1px #000 solid',
+    marginTop: '15px',
+    height: '100px',
+    textAlign: 'center'
 
+};
+
+const makeId = () => Math.random().toString(36).substring(7);
+
+const test = times(10, (index: number) => (
+    <div style={styles} key={makeId()}>{makeId()}</div>
+));
+
+class App extends React.Component <any,
+    any> {
+
+    constructor(props: any) {
+        super(props)
+
+        this.state = {
+            items: test
+        }
     }
 
-    const makeId = () => Math.random().toString(36).substring(7);
+    loadMore = (items: any) => this.setState({
+        items: items.concat(
+            times(10, (index: number) => (
+                <div style={styles} key={makeId()}>{makeId()}</div>
+            ))
 
-    const test = times(10, (index : number) => (
-            <div style={styles} key={makeId()}>{makeId()}</div>
-        ))
-        class App extends React.Component < any,
-        any > {
 
-            constructor(props : any) {
-                super(props)
+        )
+    });
 
-                this.state = {
-                    items: test
-                }
-            }
+    render() {
 
-            loadMore = (items : any) => this.setState({
-                items: items.concat(test)
-            })
-            render()
-            {
-
-                const Props = {
-                    items: this.state.items,
-                    loadMore: this.loadMore
-                }
-                return <InfinityListContainer {...Props}/>
-            }
+        const Props = {
+            items: this.state.items,
+            loadMore: this.loadMore
         }
+        return <InfinityListContainer {...Props}/>
+    }
+}
 
-        /**
-         *
-         */
-        render(
-            <App/>, document.getElementById('app'))
+/**
+ *
+ */
+render(
+    <App/>, document.getElementById('app'));
 
-        // const props = {     items:     loadMore: () => console.log('hello') }
+// const props = {     items:     loadMore: () => console.log('hello') }

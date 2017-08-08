@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {findDOMNode} from 'react-dom';
-import {leftPosition, topPosition} from './../util/dom-position'
-import List from './../components/List'
+import { findDOMNode } from 'react-dom';
+import { leftPosition, topPosition } from './../util/dom-position';
+import List from './../components/List';
 
 interface InfinityListProps {
 
@@ -14,44 +14,49 @@ interface InfinityListProps {
     loader?: any,
     showLoader?: boolean,
     loadMore?: any,
-    items?: Array < JSX.Element >,
-    children?: Array < JSX.Element >,
-    holderType?: string,
+    items?: Array<JSX.Element>,
+    children?: Array<JSX.Element>,
+    wrapElement?: string,
     className?: string,
     animateItems?: boolean
 }
 
-interface InfinityListState {}
+interface InfinityListState {
+    currentPage: number,
 
-class InfinityListContainer extends React.PureComponent < InfinityListProps,
-undefined > {
+}
 
-    public static defaultProps : Partial < InfinityListProps > = {
-        className: '',
+class InfinityListContainer extends React.PureComponent <InfinityListProps,
+    InfinityListState> {
+
+    public static defaultProps: Partial<InfinityListProps> = {
+        className          : '',
         elementIsScrollable: false,
-        containerHeight: '100%',
-        threshold: 100,
-        horizontal: false,
-        hasMore: true,
-        loadingMore: false,
-        loader: <div style={{
-            textAlign: 'center'
-        }}>Loading...</div>,
-        showLoader: true,
-        holderType: 'div',
-        loadMore: () => console.log('default laod more'),
-        children: [],
-        items: [],
-        animateItems: false
+        containerHeight    : '100%',
+        threshold          : 100,
+        horizontal         : false,
+        hasMore            : true,
+        loader             : <div style={{ textAlign: 'center' }}>Loading...</div>,
+        showLoader         : true,
+        wrapElement        : 'div',
+        loadMore           : () => console.log( 'default laod more' ),
+        children           : [],
+        items              : [],
+        animateItems       : false
     };
-    constructor(props : InfinityListProps) {
-        super(props);
 
-        console.log(props)
+    constructor( props: InfinityListProps ) {
+        super( props );
+
+
+        this.state = {
+            currentPage: 1,
+        };
+
 
         this.scrollListener = this
             .scrollListener
-            .bind(this);
+            .bind( this );
 
     }
 
@@ -67,30 +72,39 @@ undefined > {
         this.detachScrollListener();
     }
 
-    render() : JSX.Element {
-        const {items} = this.props;
-        return <List items={items}/>;
+    render(): JSX.Element {
+
+
+        return <List items={this._renderOptions()}/>;
     }
 
-    _findElement() : any
-    {
+    /**
+     *
+     *
+     *
+     */
+
+
+
+    _findElement(): any {
         return this.props.elementIsScrollable
-            ? findDOMNode(this)
+            ? findDOMNode( this )
             : window;
     }
 
-    attachScrollListener() : void {
-        if(!this.props.hasMore || this.props.loadingMore) 
-            return;
-        let el = this._findElement();
-        el.addEventListener('scroll', this.scrollListener, true);
-        el.addEventListener('resize', this.scrollListener, true);
+    attachScrollListener(): void {
+
+        if (!this.props.hasMore) return;
+
+        const el = this._findElement();
+        el.addEventListener( 'scroll', this.scrollListener, true );
+        el.addEventListener( 'resize', this.scrollListener, true );
         this.scrollListener();
     }
 
-    _elScrollListener() : number {
+    _elScrollListener(): number {
 
-        const el: HTMLElement = findDOMNode(this);
+        const el: HTMLElement = findDOMNode( this );
 
         if (this.props.horizontal) {
             const leftScrollPos = el.scrollLeft;
@@ -109,8 +123,9 @@ undefined > {
         return (totalContainerHeight - bottomScrollPos);
     }
 
-    _windowScrollListener() : number {
-        const el: HTMLElement = findDOMNode(this);
+    _windowScrollListener(): number {
+
+        const el: HTMLElement = findDOMNode( this );
         const doc: any = document;
         const w: any = window;
         /**
@@ -121,89 +136,85 @@ undefined > {
             const windowScrollLeft = (w.pageXOffset !== undefined)
                 ? w.pageXOffset
                 : (doc.documentElement || doc.body.parentNode || doc.body).scrollLeft as Document;
-            const elTotalWidth = leftPosition(el) + el.offsetWidth;
-            const currentRightPosition = elTotalWidth - windowScrollLeft - window.innerWidth;
-            return currentRightPosition;
+            const elTotalWidth = leftPosition( el ) + el.offsetWidth;
+
+            return elTotalWidth - windowScrollLeft - window.innerWidth;
         }
 
         const windowScrollTop = (window.pageYOffset !== undefined)
             ? window.pageYOffset
             : (doc.documentElement || doc.body.parentNode || doc.body).scrollTop;
-        const elTotalHeight = topPosition(el) + el.offsetHeight;
-        const currentBottomPosition = elTotalHeight - windowScrollTop - window.innerHeight;
 
-        return currentBottomPosition;
+        const elTotalHeight = topPosition( el ) + el.offsetHeight;
+
+        return elTotalHeight - windowScrollTop - window.innerHeight;
+
     }
 
-    scrollListener() : void {
+    scrollListener(): void {
         // This is to prevent the upcoming logic from toggling a load more before any
         // data has been passed to the component
 
-        if(this._totalItemsSize() <= 0) 
+        if (this._totalItemsSize() <= 0)
             return;
-        
+
         let bottomPosition = this.props.elementIsScrollable
             ? this._elScrollListener()
             : this._windowScrollListener();
 
-        if (bottomPosition < Number(this.props.threshold)) {
+        if (bottomPosition < Number( this.props.threshold )) {
+
             this.detachScrollListener();
 
-            this
-                .props
-                .loadMore(this.props.items);
+            const { loadMore } = this.props;
+            const { currentPage } = this.state;
+
+            loadMore( currentPage );
         }
     }
 
-    detachScrollListener() {
+    detachScrollListener(): void {
         let el = this._findElement();
-        el.removeEventListener('scroll', this.scrollListener, true);
-        el.removeEventListener('resize', this.scrollListener, true);
+        el.removeEventListener( 'scroll', this.scrollListener, true );
+        el.removeEventListener( 'resize', this.scrollListener, true );
     }
 
-    _renderOptions() {
-        const allItems = this
-            .props
-            .children
-            .concat(this.props.items);
+    _renderOptions(): Array<JSX.Element> {
+        const { children, items } = this.props;
 
-        return allItems;
+        return children.concat( items );
     }
 
-    _totalItemsSize() : number {
-        let totalSize;
+    _totalItemsSize = (): number => this.props.children.length;
 
-        if (this.props.items) 
-            return this.props.items.length
-        else 
-            return this.props.children.length;
 
-        }
-    
     renderLoader() {
-        return (this.props.loadingMore && this.props.showLoader)
+        const { hasMore, showLoader } = this.props;
+
+        return (hasMore && showLoader)
             ? this.props.loader
-            : undefined;
+            : null;
     }
 
-    _assignHolderClass() : string {
+    _assignHolderClass(): string {
 
-        const additionalClass = (typeof this.props.className === 'function')
-            ? this
-                .props
-                .className()
-            : this.props.className;
+        const { className } = this.props;
 
-        return 'redux-infinite-scroll ' + additionalClass;
+        const additionalClass = (typeof className === 'function')
+            ? className()
+            : className;
+
+        return 'infinite-list ' + additionalClass;
     }
 
-    _renderWithTransitions() : JSX.Element {
-        const allItems = this
-            .props
-            .children
-            .concat(this.props.items);
+    /**
+     * @deprecated
+     * @returns {JSX.Element}
+     * @private
+     */
+    _renderWithTransitions(): JSX.Element {
 
-        console.log('animating with tran');
+        console.log( 'animating with tran' );
 
         /**
          * TODO: Should add in next version
@@ -219,8 +230,8 @@ undefined > {
         // transitionAppearTimeout={this.props.transitionAppearTimeout}> {allItems}
         // </ReactCSSTransitionGroup> )}
 
-        return <div>Withanimations</div>
-        }
+        return <div>With animations</div>;
     }
+}
 
-    export default InfinityListContainer;
+export default InfinityListContainer;
