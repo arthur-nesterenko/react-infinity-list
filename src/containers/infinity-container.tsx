@@ -101,8 +101,9 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
 
     attachScrollListener(): void {
 
+        const { hasMore } = this.props;
 
-        if (!this.props.hasMore) return;
+        if (!hasMore) return;
 
         const el = this._findElement();
         el.addEventListener( 'scroll', this.scrollListener, true );
@@ -114,7 +115,9 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
 
         const el: HTMLElement = findDOMNode( this );
 
-        if (this.props.horizontal) {
+        const { horizontal } = this.props;
+
+        if (horizontal) {
             const leftScrollPos = el.scrollLeft;
             const totalContainerWidth = el.scrollWidth;
             const containerFixedWidth = el.offsetWidth;
@@ -136,21 +139,23 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
         const el: HTMLElement = findDOMNode( this );
         const doc: any = document;
         const w: any = window;
+
+        const { horizontal } = this.props;
         /**
          *TODO: Should implement in next version horizontal version
          */
 
-        if (this.props.horizontal) {
+        if (horizontal) {
             const windowScrollLeft = (w.pageXOffset !== undefined)
                 ? w.pageXOffset
                 : (doc.documentElement || doc.body.parentNode || doc.body).scrollLeft as Document;
             const elTotalWidth = leftPosition( el ) + el.offsetWidth;
 
-            return elTotalWidth - windowScrollLeft - window.innerWidth;
+            return elTotalWidth - windowScrollLeft - w.innerWidth;
         }
 
-        const windowScrollTop = (window.pageYOffset !== undefined)
-            ? window.pageYOffset
+        const windowScrollTop = (w.pageYOffset !== undefined)
+            ? w.pageYOffset
             : (doc.documentElement || doc.body.parentNode || doc.body).scrollTop;
 
         const elTotalHeight = topPosition( el ) + el.offsetHeight;
@@ -160,22 +165,22 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
     }
 
     scrollListener(): void {
-        // This is to prevent the upcoming logic from toggling a load more before any
-        // data has been passed to the component
 
-        console.log( this._totalItemsSize(), 'hello' );
         if (this._totalItemsSize() <= 0)
             return;
 
-        let bottomPosition = this.props.elementIsScrollable
+
+        const { elementIsScrollable, threshold, hasMore } = this.props;
+
+        const bottomPosition = elementIsScrollable
             ? this._elScrollListener()
             : this._windowScrollListener();
 
-        if (bottomPosition < this.props.threshold) {
+        if (bottomPosition < threshold) {
 
             this.detachScrollListener();
 
-            if (this.props.hasMore) {
+            if (hasMore) {
 
                 this.setState( prevState => ({ page: prevState.currentPage + 1 }) );
 
@@ -192,7 +197,7 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
     }
 
     detachScrollListener(): void {
-        let el = this._findElement();
+        const el = this._findElement();
         el.removeEventListener( 'scroll', this.scrollListener, true );
         el.removeEventListener( 'resize', this.scrollListener, true );
     }
