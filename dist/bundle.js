@@ -9762,142 +9762,143 @@ module.exports = getIteratorFn;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(32);
-var react_dom_1 = __webpack_require__(50);
-var dom_position_1 = __webpack_require__(87);
-var List_1 = __webpack_require__(85);
-var InfinityListContainer = (function (_super) {
-    __extends(InfinityListContainer, _super);
-    function InfinityListContainer(props) {
-        var _this = _super.call(this, props) || this;
-        _this._totalItemsSize = function () { return _this.props.children.length; };
-        _this.state = {
+const React = __webpack_require__(32);
+const react_dom_1 = __webpack_require__(50);
+const dom_position_1 = __webpack_require__(87);
+const List_1 = __webpack_require__(85);
+class InfinityListContainer extends React.PureComponent {
+    constructor(props) {
+        super(props);
+        this._totalItemsSize = () => this._renderItems().length;
+        this.state = {
             currentPage: 1,
         };
-        _this.scrollListener = _this
+        this.scrollListener = this
             .scrollListener
-            .bind(_this);
-        return _this;
+            .bind(this);
     }
-    InfinityListContainer.prototype.componentDidMount = function () {
+    componentDidMount() {
         this.attachScrollListener();
-    };
-    InfinityListContainer.prototype.componentDidUpdate = function () {
+    }
+    componentDidUpdate() {
         this.attachScrollListener();
-    };
-    InfinityListContainer.prototype.componentWillUnmount = function () {
+    }
+    componentWillUnmount() {
         this.detachScrollListener();
-    };
-    InfinityListContainer.prototype.render = function () {
-        return React.createElement(List_1.default, { items: this._renderOptions() });
-    };
+    }
+    render() {
+        const Props = {
+            loader: this.renderLoader(),
+            items: this._renderItems(),
+            className: this._assignСlass(),
+            height: this.props.containerHeight
+        };
+        return React.createElement(List_1.default, Object.assign({}, Props));
+    }
     /**
      *
      *
      *
      */
-    InfinityListContainer.prototype._findElement = function () {
+    _findElement() {
         return this.props.elementIsScrollable
             ? react_dom_1.findDOMNode(this)
             : window;
-    };
-    InfinityListContainer.prototype.attachScrollListener = function () {
+    }
+    attachScrollListener() {
         if (!this.props.hasMore)
             return;
-        var el = this._findElement();
+        const el = this._findElement();
         el.addEventListener('scroll', this.scrollListener, true);
         el.addEventListener('resize', this.scrollListener, true);
         this.scrollListener();
-    };
-    InfinityListContainer.prototype._elScrollListener = function () {
-        var el = react_dom_1.findDOMNode(this);
+    }
+    _elScrollListener() {
+        const el = react_dom_1.findDOMNode(this);
         if (this.props.horizontal) {
-            var leftScrollPos = el.scrollLeft;
-            var totalContainerWidth = el.scrollWidth;
-            var containerFixedWidth = el.offsetWidth;
-            var rightScrollPos = leftScrollPos + containerFixedWidth;
+            const leftScrollPos = el.scrollLeft;
+            const totalContainerWidth = el.scrollWidth;
+            const containerFixedWidth = el.offsetWidth;
+            const rightScrollPos = leftScrollPos + containerFixedWidth;
             return (totalContainerWidth - rightScrollPos);
         }
-        var topScrollPos = el.scrollTop;
-        var totalContainerHeight = el.scrollHeight;
-        var containerFixedHeight = el.offsetHeight;
-        var bottomScrollPos = topScrollPos + containerFixedHeight;
+        const topScrollPos = el.scrollTop;
+        const totalContainerHeight = el.scrollHeight;
+        const containerFixedHeight = el.offsetHeight;
+        const bottomScrollPos = topScrollPos + containerFixedHeight;
         return (totalContainerHeight - bottomScrollPos);
-    };
-    InfinityListContainer.prototype._windowScrollListener = function () {
-        var el = react_dom_1.findDOMNode(this);
-        var doc = document;
-        var w = window;
+    }
+    _windowScrollListener() {
+        const el = react_dom_1.findDOMNode(this);
+        const doc = document;
+        const w = window;
         /**
          *TODO: Should implement in next version horizontal version
          */
         if (this.props.horizontal) {
-            var windowScrollLeft = (w.pageXOffset !== undefined)
+            const windowScrollLeft = (w.pageXOffset !== undefined)
                 ? w.pageXOffset
                 : (doc.documentElement || doc.body.parentNode || doc.body).scrollLeft;
-            var elTotalWidth = dom_position_1.leftPosition(el) + el.offsetWidth;
+            const elTotalWidth = dom_position_1.leftPosition(el) + el.offsetWidth;
             return elTotalWidth - windowScrollLeft - window.innerWidth;
         }
-        var windowScrollTop = (window.pageYOffset !== undefined)
+        const windowScrollTop = (window.pageYOffset !== undefined)
             ? window.pageYOffset
             : (doc.documentElement || doc.body.parentNode || doc.body).scrollTop;
-        var elTotalHeight = dom_position_1.topPosition(el) + el.offsetHeight;
+        const elTotalHeight = dom_position_1.topPosition(el) + el.offsetHeight;
         return elTotalHeight - windowScrollTop - window.innerHeight;
-    };
-    InfinityListContainer.prototype.scrollListener = function () {
+    }
+    scrollListener() {
         // This is to prevent the upcoming logic from toggling a load more before any
         // data has been passed to the component
+        console.log(this._totalItemsSize(), 'hello');
         if (this._totalItemsSize() <= 0)
             return;
-        var bottomPosition = this.props.elementIsScrollable
+        let bottomPosition = this.props.elementIsScrollable
             ? this._elScrollListener()
             : this._windowScrollListener();
-        if (bottomPosition < Number(this.props.threshold)) {
+        if (bottomPosition < this.props.threshold) {
             this.detachScrollListener();
-            var loadMore = this.props.loadMore;
-            var currentPage = this.state.currentPage;
-            loadMore(currentPage);
+            if (this.props.hasMore) {
+                this.setState(prevState => ({ page: prevState.currentPage + 1 }));
+                const { currentPage } = this.state;
+                const { loadMore } = this.props;
+                /**
+                 *
+                 */
+                loadMore(currentPage);
+            }
         }
-    };
-    InfinityListContainer.prototype.detachScrollListener = function () {
-        var el = this._findElement();
+    }
+    detachScrollListener() {
+        let el = this._findElement();
         el.removeEventListener('scroll', this.scrollListener, true);
         el.removeEventListener('resize', this.scrollListener, true);
-    };
-    InfinityListContainer.prototype._renderOptions = function () {
-        var _a = this.props, children = _a.children, items = _a.items;
+    }
+    _renderItems() {
+        const { children, items } = this.props;
         return children.concat(items);
-    };
-    InfinityListContainer.prototype.renderLoader = function () {
-        var _a = this.props, hasMore = _a.hasMore, showLoader = _a.showLoader;
+    }
+    renderLoader() {
+        const { hasMore, showLoader } = this.props;
         return (hasMore && showLoader)
             ? this.props.loader
             : null;
-    };
-    InfinityListContainer.prototype._assignHolderClass = function () {
-        var className = this.props.className;
-        var additionalClass = (typeof className === 'function')
+    }
+    _assignСlass() {
+        const { className } = this.props;
+        const additionalClass = (typeof className === 'function')
             ? className()
             : className;
         return 'infinite-list ' + additionalClass;
-    };
+    }
     /**
      * @deprecated
      * @returns {JSX.Element}
      * @private
      */
-    InfinityListContainer.prototype._renderWithTransitions = function () {
+    _renderWithTransitions() {
         console.log('animating with tran');
         /**
          * TODO: Should add in next version
@@ -9912,24 +9913,23 @@ var InfinityListContainer = (function (_super) {
         // transitionAppearTimeout={this.props.transitionAppearTimeout}> {allItems}
         // </ReactCSSTransitionGroup> )}
         return React.createElement("div", null, "With animations");
-    };
-    InfinityListContainer.defaultProps = {
-        className: '',
-        elementIsScrollable: false,
-        containerHeight: '100%',
-        threshold: 100,
-        horizontal: false,
-        hasMore: true,
-        loader: React.createElement("div", { style: { textAlign: 'center' } }, "Loading..."),
-        showLoader: true,
-        wrapElement: 'div',
-        loadMore: function () { return console.log('default laod more'); },
-        children: [],
-        items: [],
-        animateItems: false
-    };
-    return InfinityListContainer;
-}(React.PureComponent));
+    }
+}
+InfinityListContainer.defaultProps = {
+    className: '',
+    elementIsScrollable: false,
+    containerHeight: '100%',
+    threshold: 100,
+    horizontal: false,
+    hasMore: true,
+    loader: React.createElement("div", { style: { marginTop: '15px', textAlign: 'center' } }, "Loading..."),
+    showLoader: true,
+    wrapElement: 'div',
+    loadMore: () => false,
+    children: [],
+    items: [],
+    animateItems: false
+};
 exports.default = InfinityListContainer;
 
 
@@ -27032,11 +27032,10 @@ exports.default = InfinityListContainer;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(32);
-var List = function (_a) {
-    var items = _a.items;
-    return React.createElement("div", null, items);
-};
+const React = __webpack_require__(32);
+const List = ({ items, loader, height, className }) => React.createElement("div", { className: className, style: { height } },
+    items,
+    loader);
 exports.default = List;
 
 
@@ -27046,58 +27045,38 @@ exports.default = List;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(32);
-var react_dom_1 = __webpack_require__(50);
-var infinity_container_1 = __webpack_require__(83);
-var lodash_1 = __webpack_require__(84);
-var styles = {
+const React = __webpack_require__(32);
+const react_dom_1 = __webpack_require__(50);
+const infinity_container_1 = __webpack_require__(83);
+const lodash_1 = __webpack_require__(84);
+const styles = {
     border: '1px #000 solid',
     marginTop: '15px',
     height: '100px',
     textAlign: 'center'
 };
-var makeId = function () { return Math.random().toString(36).substring(7); };
-var test = lodash_1.times(10, function (index) { return (React.createElement("div", { style: styles, key: makeId() }, makeId())); });
-var App = (function (_super) {
-    __extends(App, _super);
-    function App(props) {
-        var _this = _super.call(this, props) || this;
-        _this.loadMore = function (items) { return _this.setState({
-            items: items.concat(lodash_1.times(10, function (index) { return (React.createElement("div", { style: styles, key: makeId() }, makeId())); }))
-        }); };
-        _this.state = {
-            items: test
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const makeId = () => Math.random().toString(36).substring(7);
+const test = () => lodash_1.times(10, (index) => (React.createElement("div", { style: styles, key: makeId() }, makeId())));
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.loadMore = (currentPage) => sleep(500).then(() => this.setState({
+            items: [...this.state.items, ...test()]
+        }));
+        this.state = {
+            items: test()
         };
-        return _this;
     }
-    App.prototype.render = function () {
-        var Props = {
+    render() {
+        const Props = {
             items: this.state.items,
             loadMore: this.loadMore
         };
-        return React.createElement(infinity_container_1.default, __assign({}, Props));
-    };
-    return App;
-}(React.Component));
+        return React.createElement(infinity_container_1.default, Object.assign({}, Props));
+    }
+}
 /**
  *
  */

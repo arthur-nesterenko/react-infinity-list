@@ -18,12 +18,12 @@ interface InfinityListProps {
     children?: Array<JSX.Element>,
     wrapElement?: string,
     className?: string,
-    animateItems?: boolean
+    animateItems?: boolean,
+    gradually ?: boolean
 }
 
 interface InfinityListState {
     currentPage: number,
-
 }
 
 class InfinityListContainer extends React.PureComponent <InfinityListProps,
@@ -36,10 +36,10 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
         threshold          : 100,
         horizontal         : false,
         hasMore            : true,
-        loader             : <div style={{ textAlign: 'center' }}>Loading...</div>,
+        loader             : <div style={{ marginTop: '15px', textAlign: 'center' }}>Loading...</div>,
         showLoader         : true,
         wrapElement        : 'div',
-        loadMore           : () => console.log( 'default laod more' ),
+        loadMore           : () => false,
         children           : [],
         items              : [],
         animateItems       : false
@@ -74,8 +74,15 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
 
     render(): JSX.Element {
 
+        const Props = {
+            loader   : this.renderLoader(),
+            items    : this._renderItems(),
+            className: this._assignСlass(),
+            height   : this.props.containerHeight
 
-        return <List items={this._renderOptions()}/>;
+        };
+
+        return <List {...Props}/>;
     }
 
     /**
@@ -93,6 +100,7 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
     }
 
     attachScrollListener(): void {
+
 
         if (!this.props.hasMore) return;
 
@@ -155,6 +163,7 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
         // This is to prevent the upcoming logic from toggling a load more before any
         // data has been passed to the component
 
+        console.log( this._totalItemsSize(), 'hello' );
         if (this._totalItemsSize() <= 0)
             return;
 
@@ -162,14 +171,23 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
             ? this._elScrollListener()
             : this._windowScrollListener();
 
-        if (bottomPosition < Number( this.props.threshold )) {
+        if (bottomPosition < this.props.threshold) {
 
             this.detachScrollListener();
 
-            const { loadMore } = this.props;
-            const { currentPage } = this.state;
+            if (this.props.hasMore) {
 
-            loadMore( currentPage );
+                this.setState( prevState => ({ page: prevState.currentPage + 1 }) );
+
+                const { currentPage } = this.state;
+                const { loadMore } = this.props;
+                /**
+                 *
+                 */
+                loadMore( currentPage );
+            }
+
+
         }
     }
 
@@ -179,13 +197,13 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
         el.removeEventListener( 'resize', this.scrollListener, true );
     }
 
-    _renderOptions(): Array<JSX.Element> {
+    _renderItems(): Array<JSX.Element> {
         const { children, items } = this.props;
 
         return children.concat( items );
     }
 
-    _totalItemsSize = (): number => this.props.children.length;
+    _totalItemsSize = (): number => this._renderItems().length;
 
 
     renderLoader() {
@@ -196,7 +214,7 @@ class InfinityListContainer extends React.PureComponent <InfinityListProps,
             : null;
     }
 
-    _assignHolderClass(): string {
+    _assignСlass(): string {
 
         const { className } = this.props;
 
